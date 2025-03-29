@@ -1,0 +1,131 @@
+import React, { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { Search, Menu, Sun, Moon } from "lucide-react";
+
+const animeList = [
+  {
+    title: "Attack on Titan",
+    genre: "Action",
+    image: "https://via.placeholder.com/200",
+    description: "Humans fight for survival against giant humanoid creatures.",
+    status: "Ongoing",
+    trendingRank: 1
+  },
+  {
+    title: "Demon Slayer",
+    genre: "Fantasy",
+    image: "https://via.placeholder.com/200",
+    description: "A boy fights demons to save his sister and avenge his family.",
+    status: "Ongoing",
+    trendingRank: 2
+  },
+  {
+    title: "One Piece",
+    genre: "Adventure",
+    image: "https://via.placeholder.com/200",
+    description: "A pirate's adventure to find the legendary One Piece treasure.",
+    status: "Ongoing",
+    trendingRank: 3
+  }
+];
+
+const genres = ["All", "Action", "Fantasy", "Adventure"];
+
+export default function AnimeWebsite() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedGenre, setSelectedGenre] = useState("All");
+  const [recentlyWatched, setRecentlyWatched] = useState([]);
+  const [sortBy, setSortBy] = useState("title");
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [passcode, setPasscode] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  const trendingAnime = animeList.filter(anime => anime.trendingRank).sort((a, b) => a.trendingRank - b.trendingRank).slice(0, 10);
+  const ongoingAnime = animeList.filter(anime => anime.status === "Ongoing");
+
+  const filteredAnime = animeList
+    .filter(anime =>
+      (selectedGenre === "All" || anime.genre === selectedGenre) &&
+      anime.title.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
+
+  const handleWatch = (anime) => {
+    setRecentlyWatched(prev => [anime, ...prev.filter(a => a.title !== anime.title)].slice(0, 5));
+  };
+
+  const handlePasscodeSubmit = () => {
+    if (passcode === "Enjoy") {
+      setIsAuthenticated(true);
+    } else {
+      alert("Incorrect Passcode");
+    }
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
+        <h1 className="text-3xl font-bold mb-4">Enter Passcode</h1>
+        <input
+          type="password"
+          className="px-4 py-2 text-black rounded-xl focus:outline-none"
+          value={passcode}
+          onChange={(e) => setPasscode(e.target.value)}
+        />
+        <Button onClick={handlePasscodeSubmit} className="mt-4 bg-blue-600 px-4 py-2 rounded-xl">Submit</Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`${isDarkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-black"} p-6 min-h-screen transition-colors duration-300`}>
+      <header className="flex justify-between items-center mb-8 p-4 bg-gray-800 rounded-2xl shadow-xl">
+        <Menu className="text-white cursor-pointer" size={28} />
+        <h1 className="text-4xl font-extrabold text-center flex-1">Anime Showcase</h1>
+        <div className="flex items-center space-x-4">
+          <div className="relative w-64">
+            <input
+              type="text"
+              placeholder="Search Anime..."
+              className="w-full px-4 py-2 text-black rounded-xl focus:outline-none"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Search className="absolute right-3 top-3 text-gray-500" />
+          </div>
+          <Button onClick={() => setIsDarkMode(!isDarkMode)}>{isDarkMode ? <Sun /> : <Moon />}</Button>
+        </div>
+      </header>
+      
+      <section className="mb-8">
+        <h2 className="text-2xl font-bold mb-4">Trending Anime (Top 10)</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {trendingAnime.map((anime, index) => (
+            <Card key={index} className="bg-gray-800 rounded-2xl overflow-hidden shadow-2xl">
+              <img src={anime.image} alt={anime.title} className="w-full h-40 object-cover" />
+              <CardContent className="p-4">
+                <h2 className="text-xl font-bold">{anime.title}</h2>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section className="mb-8">
+        <h2 className="text-2xl font-bold mb-4">Ongoing Anime</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {ongoingAnime.map((anime, index) => (
+            <Card key={index} className="bg-gray-800 rounded-2xl overflow-hidden shadow-2xl">
+              <img src={anime.image} alt={anime.title} className="w-full h-40 object-cover" />
+              <CardContent className="p-4">
+                <h2 className="text-xl font-bold">{anime.title}</h2>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
